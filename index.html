@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Serkom terserah mau ngerjain atau nggak </title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-sky-50 text-slate-800 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-sky-600 text-white py-6 px-4 shadow-md sticky top-0 z-10">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold">Kuis Teori Laravel CRUD</h1>
+                <p class="text-sky-100 text-xs sm:text-sm">Jawab semua 12 soal di bawah ini, lalu cek hasil di paling bawah.</p>
+            </div>
+            <span class="bg-sky-700 text-sky-100 text-xs font-semibold px-3 py-1.5 rounded-full">
+                12 Soal
+            </span>
+        </div>
+    </header>
+
+    <!-- Daftar Soal ke Bawah -->
+    <main class="max-w-3xl mx-auto px-4 py-8 space-y-6">
+        
+        <form id="quiz-form" class="space-y-6">
+            <div id="questions-list" class="space-y-6">
+                <!-- Soal akan dimuat di sini lewat JavaScript -->
+            </div>
+
+            <!-- Tombol Cek Hasil di Akhir -->
+            <div class="bg-white border border-sky-200 rounded-2xl p-6 text-center shadow-sm space-y-4">
+                <p class="text-slate-600 text-sm">Udah yakin nih boss?</p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <button type="button" id="btn-check" onclick="startCheckProcess()" class="bg-sky-500 hover:bg-sky-600 text-white font-bold px-8 py-3 rounded-xl shadow transition-all cursor-pointer">
+                        Cek Hasil & Validasi
+                    </button>
+                    <button type="button" onclick="resetQuiz()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-6 py-3 rounded-xl transition-all cursor-pointer">
+                        ulangss
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Kotak Loading Palsu 3 Detik (Gambar 2) -->
+        <div id="loading-box" class="hidden bg-white border-2 border-sky-400 rounded-2xl p-8 shadow-lg text-center space-y-4">
+            <div class="flex justify-center">
+                <img src="gambar_20261117_213517.jpg" alt="Bentar Gw Cek" class="w-48 h-48 object-cover rounded-xl border-2 border-sky-300 shadow">
+            </div>
+            <div class="flex items-center justify-center gap-2 text-sky-600 font-bold text-lg">
+                <svg class="animate-spin h-5 w-5 text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Bentar wak</span>
+            </div>
+        </div>
+
+        <!-- Kotak Hasil & Gambar Reaksi -->
+        <div id="result-box" class="hidden bg-white border-2 border-sky-400 rounded-2xl p-6 sm:p-8 shadow-lg text-center space-y-5">
+            <h2 class="text-2xl font-bold text-sky-700">Hasil Validasi Kuis Anda</h2>
+            
+            <!-- Area Gambar Reaksi -->
+            <div id="result-image-container" class="flex flex-wrap justify-center gap-4 my-2">
+                <!-- Gambar dimuat di sini sesuai skor -->
+            </div>
+
+            <!-- Pesan Motivasi -->
+            <p id="result-message" class="text-lg font-semibold text-slate-800"></p>
+
+            <!-- Ringkasan Benar & Salah -->
+            <div class="grid grid-cols-2 gap-4 max-w-md mx-auto pt-2">
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                    <div class="text-sm text-emerald-700 font-medium">Gacorrr</div>
+                    <div id="correct-count" class="text-3xl font-extrabold text-emerald-600">0</div>
+                </div>
+                <div class="bg-rose-50 border border-rose-200 rounded-xl p-4">
+                    <div class="text-sm text-rose-700 font-medium">Cupu noob lol , bot </div>
+                    <div id="wrong-count" class="text-3xl font-extrabold text-rose-600">0</div>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-500 pt-2">
+                Gulir ke atas untuk melihat tanda hijau (benar) dan merah (salah) pada setiap soal.
+            </p>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-6 text-xs text-slate-500">
+        Kuis tes tes an jago serkom apa kaga :v
+    </footer>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                code: "A1",
+                question: "Pada Laravel Resource Controller, method apa yang digunakan untuk menyimpan data baru ke database? Sebutkan HTTP method, URL, dan nama route-nya.",
+                options: [
+                    "store (POST, /resources, resources.store)",
+                    "create (GET, /resources/create, resources.create)",
+                    "update (PUT/PATCH, /resources/{id}, resources.update)",
+                    "save (POST, /resources/save, resources.save)"
+                ],
+                correctIndex: 0
+            },
+            {
+                id: 2,
+                code: "A2",
+                question: "Pada Laravel Resource Controller, method apa yang digunakan untuk menampilkan form edit data? Sebutkan HTTP method, URL, dan nama route-nya.",
+                options: [
+                    "update (PUT, /resources/{id}, resources.update)",
+                    "edit (GET, /resources/{id}/edit, resources.edit)",
+                    "show (GET, /resources/{id}, resources.show)",
+                    "create (GET, /resources/create, resources.create)"
+                ],
+                correctIndex: 1
+            },
+            {
+                id: 3,
+                code: "A3",
+                question: "Pada Laravel Resource Controller, method apa yang digunakan untuk memperbarui data? Sebutkan HTTP method, URL, dan nama route-nya.",
+                options: [
+                    "store (POST, /resources, resources.store)",
+                    "edit (GET, /resources/{id}/edit, resources.edit)",
+                    "update (PUT/PATCH, /resources/{id}, resources.update)",
+                    "modify (PUT, /resources/{id}/modify, resources.modify)"
+                ],
+                correctIndex: 2
+            },
+            {
+                id: 4,
+                code: "A4",
+                question: "Pada Laravel Resource Controller, method apa yang digunakan untuk menghapus data? Sebutkan HTTP method, URL, dan nama route-nya.",
+                options: [
+                    "delete (DELETE, /resources/{id}/delete, resources.delete)",
+                    "remove (POST, /resources/{id}/remove, resources.remove)",
+                    "clear (GET, /resources/clear, resources.clear)",
+                    "destroy (DELETE, /resources/{id}, resources.destroy)"
+                ],
+                correctIndex: 3
+            },
+            {
+                id: 5,
+                code: "A5",
+                question: "Jelaskan perbedaan fungsi method create() dan store() pada Laravel Controller.",
+                options: [
+                    "create() menampilkan form input data baru (GET), sedangkan store() memproses penyimpanan data baru ke database (POST).",
+                    "create() menyimpan data baru ke database, sedangkan store() menampilkan form input.",
+                    "create() digunakan untuk mengedit data, sedangkan store() untuk menghapus data.",
+                    "Keduanya memiliki fungsi yang sama yaitu menyimpan data ke database."
+                ],
+                correctIndex: 0
+            },
+            {
+                id: 6,
+                code: "A6",
+                question: "Apa fungsi properti $fillable pada Model Laravel? Apa yang terjadi jika $fillable dikosongkan saat menggunakan Product::create()?",
+                options: [
+                    "Mengatur kolom primary key tabel; jika dikosongkan data tersimpan otomatis.",
+                    "Melindungi dari Mass Assignment Vulnerability; jika dikosongkan akan muncul error MassAssignmentException.",
+                    "Menentukan nama tabel di database; jika dikosongkan koneksi gagal.",
+                    "Menentukan relasi antar model; jika dikosongkan relasi tidak jalan."
+                ],
+                correctIndex: 1
+            },
+            {
+                id: 7,
+                code: "A7",
+                question: "Apa fungsi @csrf pada form Laravel? Apa yang terjadi jika directive tersebut tidak disertakan?",
+                options: [
+                    "Mengenkripsi password user di dalam form; jika tidak ada password terlihat jelas.",
+                    "Membersihkan input dari serangan XSS; jika tidak ada halaman otomatis refresh.",
+                    "Menghasilkan token keamanan mencegah serangan CSRF; jika tidak disertakan muncul error 419 Page Expired.",
+                    "Mengamankan koneksi HTTPS; jika tidak ada form tidak bisa diklik."
+                ],
+                correctIndex: 2
+            },
+            {
+                id: 8,
+                code: "A8",
+                question: "Mengapa form HTML yang digunakan untuk update data membutuhkan @method('PUT') atau @method('PATCH')?",
+                options: [
+                    "Karena server web modern melarang method POST untuk update data.",
+                    "Karena directive tersebut otomatis mengenkripsi data saat update.",
+                    "Karena method PUT/PATCH mempercepat waktu loading halaman.",
+                    "Karena form HTML standar hanya mendukung method GET dan POST, sehingga perlu spoofing agar dikenali sebagai PUT/PATCH."
+                ],
+                correctIndex: 3
+            },
+            {
+                id: 9,
+                code: "A9",
+                question: "Apa yang dimaksud dengan Route Model Binding pada Laravel? Jelaskan fungsinya.",
+                options: [
+                    "Fitur otomatis mencocokkan parameter route (misal {id}) langsung menjadi instance Model database tanpa query manual.",
+                    "Fitur menghubungkan view Blade dengan controller secara otomatis.",
+                    "Fitur melakukan validasi form otomatis di dalam file Model.",
+                    "Fitur melakukan migrasi database langsung dari file route."
+                ],
+                correctIndex: 0
+            },
+            {
+                id: 10,
+                code: "A10",
+                question: "Jelaskan alur kerja MVC (Model, View, Controller) pada proses CRUD Laravel.",
+                options: [
+                    "View menerima request langsung -> View query ke Model -> Model tampilkan ke Controller.",
+                    "Route menerima request -> Controller memproses logika & akses data via Model -> Controller mengirim data ke View.",
+                    "Model memproses request -> View melakukan query -> Controller menampilkan halaman.",
+                    "Controller langsung merender View tanpa melewati Model maupun Route."
+                ],
+                correctIndex: 1
+            },
+            {
+                id: 11,
+                code: "A11",
+                question: "Apa fungsi old() dan @error pada Blade Laravel? Jelaskan perbedaannya.",
+                options: [
+                    "old() menampilkan data lama dari database, sedangkan @error menghapus data yang salah.",
+                    "old() untuk session logout, sedangkan @error menangkap error koneksi database.",
+                    "old() mempertahankan input sebelumnya saat validasi gagal, sedangkan @error menampilkan pesan error validasi field tersebut.",
+                    "Keduanya berfungsi menghapus cache pada browser saat terjadi error."
+                ],
+                correctIndex: 2
+            },
+            {
+                id: 12,
+                code: "A12",
+                question: "Apa perintah Artisan untuk menampilkan seluruh daftar route yang terdaftar pada aplikasi Laravel?",
+                options: [
+                    "php artisan list:route",
+                    "php artisan routes:show",
+                    "php artisan make:route",
+                    "php artisan route:list"
+                ],
+                correctIndex: 3
+            }
+        ];
+
+        // Render semua soal ke bawah
+        function renderQuestions() {
+            const container = document.getElementById('questions-list');
+            container.innerHTML = '';
+
+            questions.forEach((q, qIndex) => {
+                const card = document.createElement('div');
+                card.id = `card-q-${qIndex}`;
+                card.className = "bg-white border border-sky-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4 transition-all";
+
+                let optionsHTML = '';
+                q.options.forEach((optText, optIndex) => {
+                    optionsHTML += `
+                        <label id="label-q${qIndex}-opt${optIndex}" class="flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-sky-50 cursor-pointer transition-all">
+                            <input type="radio" name="question_${qIndex}" value="${optIndex}" class="mt-1 accent-sky-600 w-4 h-4 cursor-pointer">
+                            <span class="text-sm sm:text-base text-slate-700">${optText}</span>
+                        </label>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="bg-sky-100 text-sky-700 text-xs font-bold px-2.5 py-1 rounded-md">Soal ${q.code}</span>
+                        <span id="status-q-${qIndex}" class="text-xs font-bold"></span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-semibold text-slate-800 leading-snug">${q.question}</h3>
+                    <div class="space-y-2.5">
+                        ${optionsHTML}
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Proses loading palsu 3 detik dengan Gambar 2 sebelum hasil keluar
+        function startCheckProcess() {
+            const loadingBox = document.getElementById('loading-box');
+            const resultBox = document.getElementById('result-box');
+            const btnCheck = document.getElementById('btn-check');
+
+            // Sembunyikan hasil sebelumnya & tampilkan loading
+            resultBox.classList.add('hidden');
+            loadingBox.classList.remove('hidden');
+            btnCheck.disabled = true;
+            btnCheck.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Scroll ke kotak loading
+            loadingBox.scrollIntoView({ behavior: 'smooth' });
+
+            // Delay 3 detik (3000 ms)
+            setTimeout(() => {
+                loadingBox.classList.add('hidden');
+                btnCheck.disabled = false;
+                btnCheck.classList.remove('opacity-50', 'cursor-not-allowed');
+                checkAnswers();
+            }, 3000);
+        }
+
+        // Validasi semua jawaban setelah loading selesai
+        function checkAnswers() {
+            let correctCount = 0;
+            let wrongCount = 0;
+
+            questions.forEach((q, qIndex) => {
+                const selectedRadio = document.querySelector(`input[name="question_${qIndex}"]:checked`);
+                const card = document.getElementById(`card-q-${qIndex}`);
+                const statusBadge = document.getElementById(`status-q-${qIndex}`);
+
+                // Reset warna label opsi terlebih dahulu
+                q.options.forEach((_, optIdx) => {
+                    const lbl = document.getElementById(`label-q${qIndex}-opt${optIdx}`);
+                    lbl.className = "flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 cursor-pointer transition-all";
+                });
+
+                // Tandai jawaban yang benar dengan warna hijau muda
+                const correctLabel = document.getElementById(`label-q${qIndex}-opt${q.correctIndex}`);
+                correctLabel.classList.remove('border-slate-200');
+                correctLabel.classList.add('border-emerald-500', 'bg-emerald-50', 'font-medium');
+
+                if (selectedRadio) {
+                    const userAnswer = parseInt(selectedRadio.value);
+                    if (userAnswer === q.correctIndex) {
+                        correctCount++;
+                        card.className = "bg-white border-2 border-emerald-400 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4";
+                        statusBadge.textContent = "✓ Benar";
+                        statusBadge.className = "text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full";
+                    } else {
+                        wrongCount++;
+                        card.className = "bg-white border-2 border-rose-400 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4";
+                        statusBadge.textContent = "✗ Salah";
+                        statusBadge.className = "text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full";
+
+                        // Tandai pilihan salah pengguna dengan warna merah muda
+                        const wrongLabel = document.getElementById(`label-q${qIndex}-opt${userAnswer}`);
+                        wrongLabel.classList.remove('border-slate-200');
+                        wrongLabel.classList.add('border-rose-500', 'bg-rose-50');
+                    }
+                } else {
+                    // Jika belum dijawab dihitung salah
+                    wrongCount++;
+                    card.className = "bg-white border-2 border-rose-400 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4";
+                    statusBadge.textContent = "✗ Belum Dijawab";
+                    statusBadge.className = "text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full";
+                }
+            });
+
+            // Tampilkan Kotak Hasil
+            const resultBox = document.getElementById('result-box');
+            resultBox.classList.remove('hidden');
+
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('wrong-count').textContent = wrongCount;
+
+            // Tentukan Gambar & Pesan berdasarkan skor
+            const imgContainer = document.getElementById('result-image-container');
+            const msgEl = document.getElementById('result-message');
+
+            if (correctCount === 12) {
+                // Benar 12/12 -> Tampil Gambar 1, Gambar 5, dan Gambar 8
+                imgContainer.innerHTML = `
+                    <img src="gambar_20261117_213431.jpg" alt="Gambar 1" class="w-40 h-40 sm:w-44 sm:h-44 object-cover rounded-xl border-2 border-sky-400 shadow">
+                    gambar_20261117_214756.jpg" alt="Gambar 5" class="w-40 h-40 sm:w-44 sm:h-44 object-cover rounded-xl border-2 border-sky-400 shadow">
+                    <img src="image_384c4f.png" alt="Gambar 8" class="w-40 h-40 sm:w-44 sm:h-44 object-cover rounded-xl border-2 border-sky-400 shadow">
+                `;
+                msgEl.textContent = "ANJAYYY! Semua jawaban (12/12) GACOR KALI AH ABANG AWAK NI! 🏆";
+                msgEl.className = "text-lg font-bold text-emerald-600";
+            } else if (correctCount < 5) {
+                // Benar kurang dari 5 (0 - 4) -> Tampil Gambar 3 dan Gambar 4
+                imgContainer.innerHTML = `
+                    <img src="gambar_20261117_213558.jpg" alt="Gambar 3" class="w-44 h-44 sm:w-48 sm:h-48 object-cover rounded-xl border-2 border-rose-400 shadow">
+                    <img src="gambar_20261117_214740.jpg" alt="Gambar 4" class="w-44 h-44 sm:w-48 sm:h-48 object-cover rounded-xl border-2 border-rose-400 shadow">
+                `;
+                msgEl.textContent = "HADEHH, BOTTTT BOTTTTT! 📚";
+                msgEl.className = "text-lg font-bold text-rose-600";
+            } else {
+                // Sisanya (Benar 5 sampai 11 / 8 ke bawah sampai 5 & 9-11) -> Tampil Gambar 6 dan Gambar 7
+                imgContainer.innerHTML = `
+                    <img src="gambar_20261117_214749.jpg" alt="Gambar 6" class="w-44 h-44 sm:w-48 sm:h-48 object-cover rounded-xl border-2 border-sky-400 shadow">
+                    <img src="gambar_20261117_213736.jpg" alt="Gambar 7" onerror="this.src='image_384c4f.png'" class="w-44 h-44 sm:w-48 sm:h-48 object-cover rounded-xl border-2 border-sky-400 shadow">
+                `;
+                msgEl.textContent = "Okelah boss dah oke tu👍";
+                msgEl.className = "text-lg font-bold text-sky-600";
+            }
+
+            // Scroll halus menuju kotak hasil
+            resultBox.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Reset seluruh pilihan dan tampilan
+        function resetQuiz() {
+            document.getElementById('quiz-form').reset();
+            document.getElementById('loading-box').classList.add('hidden');
+            document.getElementById('result-box').classList.add('hidden');
+            renderQuestions();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Jalankan saat halaman dibuka
+        renderQuestions();
+    </script>
+</body>
+</html>
